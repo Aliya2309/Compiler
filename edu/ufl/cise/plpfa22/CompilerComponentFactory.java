@@ -6,10 +6,7 @@ package edu.ufl.cise.plpfa22;
 
 public class CompilerComponentFactory {
 	
-	public static void main(String args[]) {
 
-		CompilerComponentFactory.getLexer("Hello World");
-	}
 
 	public static ILexer getLexer(String input) {
 		return new Lexer(input);

@@ -3,7 +3,14 @@ package edu.ufl.cise.plpfa22;
 public class Lexer implements ILexer {
 
 	public Lexer(String input) {
-		// TODO Auto-generated constructor stub
+		
+		char[] chinp = input.toCharArray();
+		int pos=0;
+		while(true) {
+			
+			
+			char ch = chinp[pos];
+		}
 	}
 
 	@Override

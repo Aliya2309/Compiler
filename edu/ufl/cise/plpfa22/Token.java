@@ -21,37 +21,54 @@ public class Token implements IToken {
 
 	@Override
 	public Kind getKind() {
-		// TODO Auto-generated method stub
-		return null;
+		// return token kind
+		return this.tkind;
 	}
 
 	@Override
 	public char[] getText() {
 		// TODO Auto-generated method stub
-		return null;
+		char[] text = this.data.toCharArray();
+		return text;
 	}
 
 	@Override
 	public SourceLocation getSourceLocation() {
 		// TODO Auto-generated method stub
-		return null;
+		
+		SourceLocation sc = new SourceLocation(this.line, this.col);
+		return sc;
 	}
 
 	@Override
 	public int getIntValue() {
-		// TODO Auto-generated method stub
-		return 0;
+
+			if (this.tkind==Kind.NUM_LIT) 
+			{ 
+				int val = Integer.parseInt(this.data);
+				return val;
+			}
+			return 0;
+
 	}
 
 	@Override
 	public boolean getBooleanValue() {
-		// TODO Auto-generated method stub
+		if (this.tkind==Kind.BOOLEAN_LIT) 
+		{ 
+			if(this.data.equals("TRUE"))
+			{
+				return true;
+			}
+			return false;
+		}
 		return false;
 	}
 
 	@Override
 	public String getStringValue() {
 		// TODO Auto-generated method stub
+		
 		return null;
 	}
 

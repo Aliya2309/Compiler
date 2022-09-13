@@ -548,6 +548,8 @@ public class Lexer implements ILexer {
 					}
 				}
 				
+				
+				
 				//end string
 				case '\"' ->
 				{
@@ -569,6 +571,12 @@ public class Lexer implements ILexer {
 					System.out.println(strg);
 				}
 				
+				case EOF ->
+				{
+					Token t = new Token("File ended unexpectedly while scanning string!", Kind.ERROR, token_pos, line, gpos, 2, dummy);
+					tokenset.add(t);
+					state = State.START;
+				}
 				//default: string continues
 				default ->
 				{

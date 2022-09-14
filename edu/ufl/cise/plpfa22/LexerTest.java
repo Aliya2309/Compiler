@@ -537,6 +537,22 @@ public void testLongInput0() throws LexicalException {
     checkEOF(lexer.next());
 }
 
+@Test
+void testIncompleteAssign() throws LexicalException {
+    String input = """
+            .,;:
+            """;
+    show(input);
+    ILexer lexer = getLexer(input);
+    checkToken(lexer.next(), Kind.DOT, 1, 1);
+    checkToken(lexer.next(), Kind.COMMA, 1, 2);
+    checkToken(lexer.next(), Kind.SEMI, 1, 3);
+    assertThrows(LexicalException.class, () -> {
+        lexer.next();
+    });
+    checkEOF(lexer.next());
+}
+
 
 }
 

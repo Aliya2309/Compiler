@@ -426,6 +426,7 @@ public void testKeywordBacktoBack() throws LexicalException {
     ILexer lexer = getLexer(input);
    checkIdent(lexer.next(), "DOWHILE", 1, 1);
     checkEOF(lexer.next());
+    checkEOF(lexer.next());
 }
 @Test
 public void testInvalidIdent() throws LexicalException {

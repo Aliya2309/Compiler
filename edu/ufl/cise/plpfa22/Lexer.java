@@ -15,7 +15,6 @@ public class Lexer implements ILexer {
 		HAVE_IDENT,
 		HAVE_NUM,
 		HAVE_STRING,
-		HAVE_WHITESPACE
 		
 	}
 	
@@ -40,7 +39,7 @@ public class Lexer implements ILexer {
 		int lexer_pos=0;
 		int token_pos=0;
 		int line=1;
-		int gpos=0;
+		int gpos=0; //global position
 		State state = State.START;
 		
 		//to keep track of first line of multiline string
@@ -349,12 +348,12 @@ public class Lexer implements ILexer {
 				}
 				
 				//whitespace
-				case '\\' ->
+				/*case '\\' ->
 				{
 					lexer_pos++;
 					gpos++;
 					state = State.HAVE_WHITESPACE;
-				}
+				}*/
 				
 				default ->
 				{
@@ -621,13 +620,16 @@ public class Lexer implements ILexer {
 	@Override
 	public IToken next() throws LexicalException {
 		
+		
 		Token tk =  tokenset.get(current_token);
-		current_token++;
+		if(current_token < (tokenset.size()-1))
+		{current_token++;}
 		if (tk.tkind == Kind.ERROR)
 		{
 			throw new LexicalException(tk.data, tk.line, tk.col);
 		}
 		return tk;
+
 	}
 
 	@Override

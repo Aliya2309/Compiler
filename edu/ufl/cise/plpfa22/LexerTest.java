@@ -214,6 +214,47 @@ class LexerTest {
 
 
 //self made tests
+	@Test
+	void stringSpaces() throws LexicalException
+	{
+
+		String input = """
+				"Line 1 \n"
+				"Line 3 \\n"
+				"Line 4"
+				"Column\t""Column\\t"abc
+				""";
+				 
+				
+
+		show(input);
+		ILexer lexer = getLexer(input);
+		checkToken(lexer.next(), Kind.STRING_LIT, 1,1);
+		checkToken(lexer.next(), Kind.STRING_LIT, 3,1);
+		checkToken(lexer.next(), Kind.STRING_LIT, 4,1);
+		checkToken(lexer.next(), Kind.STRING_LIT, 5,1);
+		checkToken(lexer.next(), Kind.STRING_LIT, 5,10);
+		checkToken(lexer.next(), Kind.IDENT, 5,20);
+	}
+	
+	@Test
+    void testColon() throws LexicalException {
+        String input = """
+        foo
+        :bar
+                """;
+        show(input);
+        ILexer lexer = getLexer(input);
+        checkIdent(lexer.next(), "foo");
+        assertThrows(LexicalException.class, () -> {
+      @SuppressWarnings("unused")
+      IToken token = lexer.next();
+    });
+    }
+
+	
+	
+	
 @Test
 void testID() throws LexicalException {
   String input = "ad23";

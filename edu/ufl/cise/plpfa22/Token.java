@@ -84,56 +84,7 @@ public class Token implements IToken {
 		
 		List<Character> nparsed = new ArrayList<>();
 	
-		/*char[] parsed = new char[newlen];
-		int c=0;
-		for (int i=1; i<len-1;i++)
-		{
-			if (chdata[i]=='\\')
-			{
-					if(chdata[i+1]=='n')
-					{
-						parsed[c]='\n';
-					}
-					if(chdata[i+1]=='b')
-					{
-						parsed[c]='\b';
-					}
-					if(chdata[i+1]=='t')
-					{
-						parsed[c]='\t';
-					}
-					if(chdata[i+1]=='f')
-					{
-						parsed[c]='\f';
-					}
-					if(chdata[i+1]=='r')
-					{
-						parsed[c]='\r';
-					}
-					if(chdata[i+1]=='"')
-					{
-						parsed[c]='"';
-					}
-					if(chdata[i+1]=='\'')
-					{
-						parsed[c]='\'';
-					}
-					if(chdata[i+1]=='\\')
-					{
-						parsed[c]='\\';
-					}
-					c++;
-					i++;
-					
-			}
-
-			
-			else
-			{
-				parsed[c]=chdata[i];
-				c++;
-			}
-		}*/
+		
 		
 		for (int i=1; i<len-1;i++)
 		{

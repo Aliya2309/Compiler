@@ -42,6 +42,9 @@ public class Lexer implements ILexer {
 		int line=1;
 		int gpos=0;
 		State state = State.START;
+		
+		//to keep track of first line of multiline string
+		int linecounter=0;
 	
 		boolean eof_enc = true;
 		char[] dummy = new char[1];
@@ -252,7 +255,7 @@ public class Lexer implements ILexer {
 								line++;
 								gpos++;
 								lexer_pos=0;
-								System.out.println("in line end");
+
 						}
 						
 					}
@@ -338,6 +341,7 @@ public class Lexer implements ILexer {
 				case '"' ->
 				{
 					token_pos=lexer_pos;
+					linecounter=0;
 
 					lexer_pos++;
 					gpos++;
@@ -454,8 +458,7 @@ public class Lexer implements ILexer {
 					//it is identifier
 					else 
 					{
-						//System.out.println(identifier);
-						//System.out.println(gpos);
+
 						Token t = new Token(identifier, Kind.IDENT, token_pos, line, gpos-ident_len, ident_len, dummy);
 						tokenset.add(t);
 					}
@@ -492,7 +495,7 @@ public class Lexer implements ILexer {
 					
 					//number converted to string
 					String snum = new String(num);
-					System.out.println(snum);
+
 					
 					//catch number too big exceptions
 					try 
@@ -518,6 +521,7 @@ public class Lexer implements ILexer {
 			{
 
 				ch = inp_eof[gpos];
+				
 				
 				switch(ch)
 				{
@@ -548,7 +552,26 @@ public class Lexer implements ILexer {
 					}
 				}
 				
+				//actual escape characters
+				case '\n' ->
+				{
+					line++;
+					gpos++;
+					lexer_pos=0;
+					linecounter++;
+				}
 				
+				case '\r' ->
+				{
+					lexer_pos++;
+					gpos++;
+				}
+				
+				case '\t' ->
+				{
+					lexer_pos++;
+					gpos++;
+				}
 				
 				//end string
 				case '\"' ->
@@ -564,11 +587,10 @@ public class Lexer implements ILexer {
 					
 					//strg stored in stringval
 					String stringval = new String(strg);
-					Token t = new Token(stringval, Kind.STRING_LIT, token_pos, line, gpos-string_len, string_len, strg);
+					Token t = new Token(stringval, Kind.STRING_LIT, token_pos, line-linecounter, gpos-string_len, string_len, strg);
 					tokenset.add(t);
 					state = State.START;
-					System.out.println("hello");
-					System.out.println(strg);
+
 				}
 				
 				case EOF ->

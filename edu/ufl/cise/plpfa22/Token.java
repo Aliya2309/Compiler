@@ -138,7 +138,6 @@ public class Token implements IToken {
 	    }
 	    String stringval =  builder.toString();
 		
-		System.out.println(nparsed);
 		//String stringval = new String(nparsed);
 		return stringval;
 	}

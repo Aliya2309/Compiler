@@ -44,6 +44,8 @@ public class Lexer implements ILexer {
 		
 		//to keep track of first line of multiline string
 		int linecounter=0;
+		//to keep track of different parts of 
+		int globalstringstart=0;
 	
 		boolean eof_enc = true;
 		char[] dummy = new char[1];
@@ -341,6 +343,7 @@ public class Lexer implements ILexer {
 				{
 					token_pos=lexer_pos;
 					linecounter=0;
+					globalstringstart=gpos;
 
 					lexer_pos++;
 					gpos++;
@@ -554,6 +557,7 @@ public class Lexer implements ILexer {
 				//actual escape characters
 				case '\n' ->
 				{
+					
 					line++;
 					gpos++;
 					lexer_pos=0;
@@ -577,7 +581,7 @@ public class Lexer implements ILexer {
 				{
 					lexer_pos++;
 					gpos++;
-					int string_len = lexer_pos - token_pos;
+					int string_len = gpos - globalstringstart;
 					char[] strg = new char[string_len];
 					for(int i=0;i<string_len;i++)
 					{

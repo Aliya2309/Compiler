@@ -1,5 +1,6 @@
 package edu.ufl.cise.plpfa22;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.ufl.cise.plpfa22.IToken;
@@ -15,8 +16,16 @@ import edu.ufl.cise.plpfa22.ast.ExpressionNumLit;
 import edu.ufl.cise.plpfa22.ast.ExpressionStringLit;
 import edu.ufl.cise.plpfa22.ast.Ident;
 import edu.ufl.cise.plpfa22.ast.ProcDec;
+import edu.ufl.cise.plpfa22.ast.Program;
 import edu.ufl.cise.plpfa22.ast.Statement;
 import edu.ufl.cise.plpfa22.ast.StatementAssign;
+import edu.ufl.cise.plpfa22.ast.StatementBlock;
+import edu.ufl.cise.plpfa22.ast.StatementCall;
+import edu.ufl.cise.plpfa22.ast.StatementEmpty;
+import edu.ufl.cise.plpfa22.ast.StatementIf;
+import edu.ufl.cise.plpfa22.ast.StatementInput;
+import edu.ufl.cise.plpfa22.ast.StatementOutput;
+import edu.ufl.cise.plpfa22.ast.StatementWhile;
 import edu.ufl.cise.plpfa22.ast.VarDec;
 
 public class Parser implements IParser {
@@ -47,40 +56,96 @@ public class Parser implements IParser {
 		}
 	}
 	
-	public void program() throws PLPException
+	public Program program() throws PLPException
 	{
-		block();
+		IToken first = token;
+
+		Block b = block();
+		Program p = new Program(first, b);
+		match(Kind.DOT);
+		return p;
 	}
 	
 	public Block block() throws PLPException 
 	{
 		//(CONST <ident> = <const_val> ( ,  <ident> = <const_val> )*  ; )* 
 		Block b;
-		List<ConstDec> constDecs;
-		List<VarDec> varDecs;
-		List<ProcDec> procedureDecs;
-		//ConstDec const;
-		VarDec var;
-		ProcDec proc;
+		List<ConstDec> constDecs = new ArrayList<ConstDec>();
+		List<VarDec> varDecs = new ArrayList<VarDec>();
+		List<ProcDec> procedureDecs = new ArrayList<ProcDec>();
+		ConstDec constd;
+		VarDec vard;
+		ProcDec procd;
+		IToken firstofblock = token;
+		IToken first;
+		IToken i;
 
 			while((token.getKind() == Kind.KW_CONST))
 			{
 				//(CONST <ident> = <const_val>
-				IToken first = token;
+				first = token;
 				match(Kind.KW_CONST);
-				IToken i = token;
+				i = token;
 				match(Kind.IDENT);
 				match(Kind.EQ);
-				IToken constval = constval();
-				ConstDec constd = new ConstDec(first, i, constval);
+				Expression constval = constval();
+				switch(constval.firstToken.getKind())
+				{
+					case NUM_LIT ->
+					{
+						 Integer val = (constval.firstToken.getIntValue());
+						 constd = new ConstDec(first, i, val);
+					}
+					case STRING_LIT ->
+					{
+						String val = constval.firstToken.getStringValue();
+						constd = new ConstDec(first, i, val);
+					}
+					case BOOLEAN_LIT ->
+					{
+						Boolean val = constval.firstToken.getBooleanValue();
+						constd = new ConstDec(first, i, val);
+					}
+					default ->
+					{
+						throw new SyntaxException("Unexpected constval"); 
+					}
+				}
+				constDecs.add(constd);
+				
 				
 				//( ,  <ident> = <const_val> )*
 				while(token.getKind() == Kind.COMMA)
 				{
 					match(Kind.COMMA);
+					first = token;
+					i = token;
 					match(Kind.IDENT);
 					match(Kind.EQ);
-					constval();	
+					constval = constval();	
+					switch(constval.firstToken.getKind())
+					{
+						case NUM_LIT ->
+						{
+							 Integer val = (constval.firstToken.getIntValue());
+							 constd = new ConstDec(first, i, val);
+						}
+						case STRING_LIT ->
+						{
+							String val = constval.firstToken.getStringValue();
+							constd = new ConstDec(first, i, val);
+						}
+						case BOOLEAN_LIT ->
+						{
+							Boolean val = constval.firstToken.getBooleanValue();
+							constd = new ConstDec(first, i, val);
+						}
+						default ->
+						{
+							throw new SyntaxException("Unexpected constval"); 
+						}
+					}
+					constDecs.add(constd);
 				}
 				
 				//; )*
@@ -92,14 +157,22 @@ public class Parser implements IParser {
 			while(token.getKind() == Kind.KW_VAR)
 			{
 				//(VAR   <ident>
+				first = token;
 				match(Kind.KW_VAR);
+				i = token;
 				match(Kind.IDENT);
+				vard = new VarDec(first, i);
+				varDecs.add(vard);
 				
 				//( , <ident> )*
 				while(token.getKind() == Kind.COMMA)
 				{
 					match(Kind.COMMA);
+					first = token;
+					i = token;
 					match(Kind.IDENT);	
+					vard = new VarDec(first, i);
+					varDecs.add(vard);
 				}
 				
 				//; )*
@@ -112,18 +185,24 @@ public class Parser implements IParser {
 
 			while(token.getKind() == Kind.KW_PROCEDURE)
 			{
+				first = token;
 				match(Kind.KW_PROCEDURE);
+				i = token;
 				match(Kind.IDENT);
 				match(Kind.SEMI);
-				block();
+				Block bk = block();
 				match(Kind.SEMI);
+				procd = new ProcDec(first, i, bk);
+				procedureDecs.add(procd);
+				
 			}
 		
 		
 		//statement
 		//predict set of statement is: ident, call, ?, !, begin, if, while, ., ;
 
-			statement();
+			Statement s = statement();
+			b = new Block(firstofblock, constDecs, varDecs, procedureDecs, s);
 			
 			return b;
 		
@@ -140,62 +219,82 @@ public class Parser implements IParser {
 			match(Kind.ASSIGN);
 			Expression e = expression();
 			stat = new StatementAssign(t, i, e);
+			return stat;
 			
 		}
 		
 		if(token.getKind() == Kind.KW_CALL)
 		{
 			match(Kind.KW_CALL);
+			Ident i = new Ident(token);
 			match(Kind.IDENT);
+			stat = new StatementCall(t, i);
+			return stat;
 
 		}
 		
 		if(token.getKind() == Kind.QUESTION)
 		{
 			match(Kind.QUESTION);
+			Ident i = new Ident(token);
 			match(Kind.IDENT);
+			stat = new StatementInput(t, i);
+			return stat;
 		}
 		
 		if(token.getKind() == Kind.BANG)
 		{
 			match(Kind.BANG);
-			expression();
+			Expression e = expression();
+			stat = new StatementOutput(t, e);
+			return stat;
 		}
 		
 		if(token.getKind() == Kind.KW_BEGIN)
 		{
-			statement();
+			match(Kind.KW_BEGIN);
+			List<Statement> stats = new ArrayList<Statement>();
+			stat = statement();
+			stats.add(stat);
 			while(token.getKind() == Kind.SEMI)
 			{
 				match(Kind.SEMI);
-				statement();
+				stat = statement();
+				stats.add(stat);
 			}
 			match(Kind.KW_END);
+			stat = new StatementBlock(t, stats);
+			return stat;
 		}
 		
 		if(token.getKind() == Kind.KW_IF)
 		{
 			match(Kind.KW_IF);
-			expression();
+			Expression e = expression();
 			match(Kind.KW_THEN);
-			statement();
+			stat = statement();
+			stat = new StatementIf(t, e, stat);
+			return stat;
 			
 		}
 		
 		if(token.getKind() == Kind.KW_WHILE)
 		{
 			match(Kind.KW_WHILE);
-			expression();
+			Expression e = expression();
 			match(Kind.KW_DO);
-			statement();
+			stat = statement();
+			stat = new StatementWhile(t, e, stat);
+			return stat;
 			
 		}
 		
 		else
 		{
-			consume();
+			stat = new StatementEmpty(t);
+			return stat;
 		}
-		return stat;
+		
 	}
 	
 	public Expression expression() throws PLPException
@@ -301,7 +400,8 @@ public class Parser implements IParser {
 	@Override
 	public ASTNode parse() throws PLPException {
 		// TODO Auto-generated method stub
-		return null;
+		Program p = program();
+		return p;
 	}
 
 }

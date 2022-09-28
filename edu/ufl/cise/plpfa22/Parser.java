@@ -1,8 +1,23 @@
 package edu.ufl.cise.plpfa22;
 
+import java.util.List;
+
 import edu.ufl.cise.plpfa22.IToken;
 import edu.ufl.cise.plpfa22.IToken.Kind;
 import edu.ufl.cise.plpfa22.ast.ASTNode;
+import edu.ufl.cise.plpfa22.ast.Block;
+import edu.ufl.cise.plpfa22.ast.ConstDec;
+import edu.ufl.cise.plpfa22.ast.Expression;
+import edu.ufl.cise.plpfa22.ast.ExpressionBinary;
+import edu.ufl.cise.plpfa22.ast.ExpressionBooleanLit;
+import edu.ufl.cise.plpfa22.ast.ExpressionIdent;
+import edu.ufl.cise.plpfa22.ast.ExpressionNumLit;
+import edu.ufl.cise.plpfa22.ast.ExpressionStringLit;
+import edu.ufl.cise.plpfa22.ast.Ident;
+import edu.ufl.cise.plpfa22.ast.ProcDec;
+import edu.ufl.cise.plpfa22.ast.Statement;
+import edu.ufl.cise.plpfa22.ast.StatementAssign;
+import edu.ufl.cise.plpfa22.ast.VarDec;
 
 public class Parser implements IParser {
 	
@@ -37,18 +52,27 @@ public class Parser implements IParser {
 		block();
 	}
 	
-	public void block() throws PLPException 
+	public Block block() throws PLPException 
 	{
 		//(CONST <ident> = <const_val> ( ,  <ident> = <const_val> )*  ; )* 
-		if (token.getKind() == Kind.KW_CONST)
-		{
+		Block b;
+		List<ConstDec> constDecs;
+		List<VarDec> varDecs;
+		List<ProcDec> procedureDecs;
+		//ConstDec const;
+		VarDec var;
+		ProcDec proc;
+
 			while((token.getKind() == Kind.KW_CONST))
 			{
 				//(CONST <ident> = <const_val>
+				IToken first = token;
 				match(Kind.KW_CONST);
+				IToken i = token;
 				match(Kind.IDENT);
 				match(Kind.EQ);
-				constval();
+				IToken constval = constval();
+				ConstDec constd = new ConstDec(first, i, constval);
 				
 				//( ,  <ident> = <const_val> )*
 				while(token.getKind() == Kind.COMMA)
@@ -62,11 +86,9 @@ public class Parser implements IParser {
 				//; )*
 				match(Kind.SEMI);	
 			}
-		}
+		
 		
 		//(VAR   <ident> ( , <ident> )* ) ; )*
-		if(token.getKind() == Kind.KW_VAR)
-		{
 			while(token.getKind() == Kind.KW_VAR)
 			{
 				//(VAR   <ident>
@@ -84,11 +106,10 @@ public class Parser implements IParser {
 				match(Kind.SEMI);
 				
 			}
-		}
+		
 		
 		//(PROCEDURE <ident> ; <block> ;  )*
-		if (token.getKind() == Kind.KW_PROCEDURE)
-		{
+
 			while(token.getKind() == Kind.KW_PROCEDURE)
 			{
 				match(Kind.KW_PROCEDURE);
@@ -97,23 +118,29 @@ public class Parser implements IParser {
 				block();
 				match(Kind.SEMI);
 			}
-		}
+		
 		
 		//statement
 		//predict set of statement is: ident, call, ?, !, begin, if, while, ., ;
-		if(token.getKind() == Kind.IDENT || token.getKind() == Kind.KW_CALL || token.getKind() == Kind.QUESTION || token.getKind() == Kind.BANG || token.getKind() == Kind.KW_BEGIN || token.getKind() == Kind.KW_IF || token.getKind() == Kind.KW_WHILE || token.getKind() == Kind.DOT || token.getKind() == Kind.SEMI)
-		{
+
 			statement();
-		}
+			
+			return b;
+		
 	}
 	
-	public void statement() throws PLPException
+	public Statement statement() throws PLPException
 	{
+		IToken t = token;
+		Statement stat;
 		if(token.getKind() == Kind.IDENT)
 		{
+			Ident i = new Ident(t);
 			match(Kind.IDENT);
 			match(Kind.ASSIGN);
-			expression();
+			Expression e = expression();
+			stat = new StatementAssign(t, i, e);
+			
 		}
 		
 		if(token.getKind() == Kind.KW_CALL)
@@ -168,59 +195,107 @@ public class Parser implements IParser {
 		{
 			consume();
 		}
+		return stat;
 	}
 	
-	public void expression() throws PLPException
+	public Expression expression() throws PLPException
 	{
-		additive_expression();
+		Expression left, right;
+		IToken op, t = token;
+		left = additive_expression();
 		while(token.getKind() == Kind.LT || token.getKind() == Kind.LE || token.getKind() == Kind.GT || token.getKind() == Kind.GE || token.getKind() == Kind.EQ || token.getKind() == Kind.NEQ)
 		{
+			op = token;
 			consume();
-			additive_expression();
+			right = additive_expression();
+			left = new ExpressionBinary(t, left, op, right);
 		}
+		return left;
 	}
 	
-	public void additive_expression() throws PLPException
+	public Expression additive_expression() throws PLPException
 	{
-		multiplicative_expression();
+		Expression left, right;
+		IToken op, t = token;
+		left = multiplicative_expression();
 		while(token.getKind() == Kind.PLUS || token.getKind() == Kind.MINUS)
 		{
+			op = token;
 			consume();
-			multiplicative_expression();
+			right = multiplicative_expression();
+			left = new ExpressionBinary(t, left, op, right);
 		}
+		return left;
 	}
 	
-	public void multiplicative_expression() throws PLPException
+	public Expression multiplicative_expression() throws PLPException
 	{
-		primary_expression();
+		Expression left, right;
+		IToken op, t = token;
+		left = primary_expression();
 		while(token.getKind() == Kind.TIMES || token.getKind() == Kind.DIV|| token.getKind() == Kind.MOD)
 		{
+			op = token;
 			consume();
-			primary_expression();
+			right = primary_expression();
+			left = new ExpressionBinary(t, left, op, right);
 		}
+		return left;
 	}
 	
-	public void primary_expression() throws PLPException
+	public Expression primary_expression() throws PLPException
 	{
 		if(token.getKind() == Kind.IDENT)
 		{
+			ExpressionIdent e = new ExpressionIdent(token);
 			match(Kind.IDENT);
+			return e;
 		}
 		if(token.getKind() == Kind.LPAREN)
 		{
 			match(Kind.LPAREN);
-			expression();
+			Expression e = expression();
 			match(Kind.RPAREN);
+			return e;
 		}
 		if(token.getKind() == Kind.NUM_LIT || token.getKind() == Kind.STRING_LIT || token.getKind() == Kind.BOOLEAN_LIT)
 		{
-			constval();
+			Expression e = constval();
+			return e;
+		}
+		else 
+		{
+			throw new SyntaxException("Unexpected token when evaluating Primary_Expression");
 		}
 	}
 	
-	public void constval() throws PLPException
+	public Expression constval() throws PLPException
 	{
-		consume();
+		IToken t = token;
+		if(token.getKind() == Kind.NUM_LIT)
+		{
+			ExpressionNumLit e = new ExpressionNumLit(t);
+			consume();
+			return e;
+			
+		}
+		if(token.getKind() == Kind.STRING_LIT)
+		{
+			ExpressionStringLit e = new ExpressionStringLit(t);
+			consume();
+			return e;
+		}
+		if(token.getKind() == Kind.BOOLEAN_LIT)
+		{
+			ExpressionBooleanLit e = new ExpressionBooleanLit(t);
+			consume();
+			return e;
+		}
+		else 
+		{
+			throw new SyntaxException("Unexpected token when evaluating Const_Val");
+		}
+		
 	}
 
 	@Override

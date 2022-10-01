@@ -401,6 +401,14 @@ public class Parser implements IParser {
 	public ASTNode parse() throws PLPException {
 		// TODO Auto-generated method stub
 		Program p = program();
+		try 
+		{
+			match(Kind.EOF);
+		}
+		catch (Exception e)
+		{
+			throw new SyntaxException("eof not found");
+		}
 		return p;
 	}
 

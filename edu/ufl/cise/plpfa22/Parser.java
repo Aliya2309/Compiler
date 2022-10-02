@@ -39,7 +39,7 @@ public class Parser implements IParser {
 		token = lexer.next();	
 	}
 	
-	IToken consume() throws LexicalException {
+	IToken consume() throws PLPException {
 		token = lexer.next();
 		return token;
 	}

@@ -10,6 +10,7 @@ import edu.ufl.cise.plpfa22.PLPException;
 public class ExpressionIdent extends Expression {
 	
 	Declaration dec;
+	int nest;
 	
 	public ExpressionIdent(IToken firstToken) {
 		super(firstToken);
@@ -37,6 +38,15 @@ public class ExpressionIdent extends Expression {
 	public void setDec(Declaration dec) {
 		this.dec = dec;
 	}
+	
+	//for Scope
+	 public void setNest(int nest) {
+	        this.nest = nest;
+	    }   
+	    
+	 public int getNest() {
+	        return nest;
+	    }
 	
 	
 

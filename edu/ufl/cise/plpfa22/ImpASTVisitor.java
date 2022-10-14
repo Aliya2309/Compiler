@@ -22,6 +22,9 @@ import edu.ufl.cise.plpfa22.ast.StatementWhile;
 import edu.ufl.cise.plpfa22.ast.VarDec;
 
 public class ImpASTVisitor implements ASTVisitor {
+	
+	int nest = 0;
+	SymbolTable st;
 
 	public ImpASTVisitor() {
 		// TODO Auto-generated constructor stub
@@ -30,12 +33,22 @@ public class ImpASTVisitor implements ASTVisitor {
 	@Override
 	public Object visitBlock(Block block, Object arg) throws PLPException {
 		// TODO Auto-generated method stub
+		if (arg == (Integer)1)
+		{
+			for(ConstDec c : block.constDecs)
+			{
+				c.visit(this, arg);
+			}
+		}
+		
 		return null;
 	}
 
 	@Override
 	public Object visitProgram(Program program, Object arg) throws PLPException {
 		// TODO Auto-generated method stub
+		program.block.visit(this, 1);
+		program.block.visit(this, arg);
 		return null;
 	}
 
@@ -121,12 +134,17 @@ public class ImpASTVisitor implements ASTVisitor {
 	@Override
 	public Object visitProcedure(ProcDec procDec, Object arg) throws PLPException {
 		// TODO Auto-generated method stub
+		procDec.setNest(nest); 
+		st.addEntry(procDec.ident.getStringValue(), procDec, false);
 		return null;
 	}
 
 	@Override
 	public Object visitConstDec(ConstDec constDec, Object arg) throws PLPException {
 		// TODO Auto-generated method stub
+		constDec.setNest(nest); 
+		st.addEntry(constDec.ident.getStringValue(), constDec, false);
+		
 		return null;
 	}
 

@@ -13,7 +13,7 @@ public class ScopeException extends PLPException {
 	}
 
 	public ScopeException(String error_message, SourceLocation loc) {
-		super(error_message, loc);
+		//super(error_message, loc);
 	}
 
 	public ScopeException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {

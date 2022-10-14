@@ -17,6 +17,6 @@ public class CompilerComponentFactory {
 	 }
 	 
 	 public static ASTVisitor getScopeVisitor() {
-		 return new ASTVisitor ImpAstVisitor();
+		 return new ImpASTVisitor();
 	 }
 }

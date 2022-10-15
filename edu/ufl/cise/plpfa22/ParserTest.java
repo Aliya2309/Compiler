@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import edu.ufl.cise.plpfa22.ast.ASTNode;
 import edu.ufl.cise.plpfa22.ast.Block;
 import edu.ufl.cise.plpfa22.ast.ConstDec;
+import edu.ufl.cise.plpfa22.ast.Declaration;
 import edu.ufl.cise.plpfa22.ast.Expression;
 import edu.ufl.cise.plpfa22.ast.ExpressionBinary;
 import edu.ufl.cise.plpfa22.ast.ExpressionBooleanLit;
@@ -632,6 +633,62 @@ class ParserTest {
 			ASTNode ast = getAST(input);
 		});
 	}
+	
+	@Test
+	void test16() throws PLPException {
+		String input = """
+				VAR a;
+				BEGIN
+				?a ;
+				!a
+				END
+				.
+				""";
+		ASTNode ast = getAST(input);
+		assertThat("", ast, instanceOf(Program.class));
+		Block v0 = ((Program) ast).block;
+		assertThat("", v0, instanceOf(Block.class));
+		List<ConstDec> v1 = ((Block) v0).constDecs;
+		assertEquals(0, v1.size());
+		List<VarDec> v2 = ((Block) v0).varDecs;
+		assertEquals(1, v2.size());
+		assertThat("", v2.get(0), instanceOf(VarDec.class));
+		IToken v3 = ((VarDec) v2.get(0)).ident;
+		assertEquals("a", String.valueOf(v3.getText()));
+		int v4 = ((VarDec) v2.get(0)).getNest();
+		assertEquals(0, v4);
+		List<ProcDec> v5 = ((Block) v0).procedureDecs;
+		assertEquals(0, v5.size());
+		Statement v6 = ((Block) v0).statement;
+		assertThat("", v6, instanceOf(StatementBlock.class));
+		List<Statement> v7 = ((StatementBlock) v6).statements;
+		assertThat("", v7.get(0), instanceOf(StatementInput.class));
+		Ident v8 = ((StatementInput) v7.get(0)).ident;
+		assertThat("", v8, instanceOf(Ident.class));
+		IToken v9 = ((Ident) v8).firstToken;
+		assertEquals("a", String.valueOf(v9.getText()));
+		int v10 = ((Ident) v8).getNest();
+		assertEquals(0, v10);
+		Declaration v11 = ((Ident) v8).getDec();
+		assertThat("", v11, instanceOf(VarDec.class));
+		IToken v12 = ((VarDec) v11).ident;
+		assertEquals("a", String.valueOf(v12.getText()));
+		int v13 = ((VarDec) v11).getNest();
+		assertEquals(0, v13);
+		assertThat("", v7.get(1), instanceOf(StatementOutput.class));
+		Expression v14 = ((StatementOutput) v7.get(1)).expression;
+		assertThat("", v14, instanceOf(ExpressionIdent.class));
+		IToken v15 = ((ExpressionIdent) v14).firstToken;
+		assertEquals("a", String.valueOf(v15.getText()));
+		int v16 = ((ExpressionIdent) v14).getNest();
+		assertEquals(0, v16);
+		Declaration v17 = ((ExpressionIdent) v14).getDec();
+		assertThat("", v17, instanceOf(VarDec.class));
+		IToken v18 = ((VarDec) v17).ident;
+		assertEquals("a", String.valueOf(v18.getText()));
+		int v19 = ((VarDec) v17).getNest();
+		assertEquals(0, v19);
+	}
 
 	@Test
 //The error in this example should be found by the Lexer
@@ -644,6 +701,8 @@ class ParserTest {
 			@SuppressWarnings("unused")
 			ASTNode ast = getAST(input);
 		});
+		
+		
 	}
 
 

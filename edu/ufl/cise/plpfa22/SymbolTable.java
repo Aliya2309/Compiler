@@ -21,8 +21,8 @@ public class SymbolTable {
 	{
 		sc++;
 		STStack.push(sc);
-		System.out.println("syack:");
-		System.out.println(STStack);
+		//System.out.println("syack:");
+		//System.out.println(STStack);
 		return sc;
 	}
 	
@@ -96,13 +96,13 @@ public class SymbolTable {
 		{
 			List<Integer> scopes  = new ArrayList<Integer>(STEntry.get(name).keySet()); 
 			Collections.reverse(scopes);
-			System.out.println(scopes);
+			//System.out.println(scopes);
 
 			
 			for(Integer sc: scopes)
 			{
 				Stack<Integer> temp = (Stack<Integer>)STStack.clone();
-				System.out.println(temp);
+				//System.out.println(temp);
 				while(!(temp.empty()))
 				{
 					if(sc == temp.peek())

@@ -550,7 +550,7 @@ class ScopeTest {
 	
 	
 	
-	
+	/*
 	
 	//self made tests
 
@@ -5121,7 +5121,7 @@ class ScopeTest {
             ASTNode ast = getDecoratedAST(input);
         });
     }
-
+*/
 
 
 }

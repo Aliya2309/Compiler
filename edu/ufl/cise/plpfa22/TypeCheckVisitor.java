@@ -12,6 +12,7 @@ import edu.ufl.cise.plpfa22.ast.ExpressionStringLit;
 import edu.ufl.cise.plpfa22.ast.Ident;
 import edu.ufl.cise.plpfa22.ast.ProcDec;
 import edu.ufl.cise.plpfa22.ast.Program;
+import edu.ufl.cise.plpfa22.ast.Statement;
 import edu.ufl.cise.plpfa22.ast.StatementAssign;
 import edu.ufl.cise.plpfa22.ast.StatementBlock;
 import edu.ufl.cise.plpfa22.ast.StatementCall;
@@ -28,7 +29,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 	
 	boolean change = false;
 	boolean fullytyped = true;
-	boolean firstpass = true;
+	//boolean firstpass = true;
 
 	public TypeCheckVisitor() {
 		// TODO Auto-generated constructor stub
@@ -64,6 +65,19 @@ public class TypeCheckVisitor implements ASTVisitor {
 		// TODO Auto-generated method stub
 		
 		program.block.visit(this, 1);
+//		firstpass=false;
+		while(change)
+		{
+			System.out.println("Next Pass!\n\n");
+			fullytyped = true;
+			change = false;
+			program.block.visit(this, 1);
+		}
+		
+		if(fullytyped == false)
+		{
+			throw new TypeCheckException("program is not fully typed");
+		}
 		return null;
 	}
 
@@ -81,22 +95,45 @@ public class TypeCheckVisitor implements ASTVisitor {
 		statementAssign.expression.visit(this, arg);
 		Type t = statementAssign.expression.getType();
 		statementAssign.ident.visit(this, arg);
-		if(statementAssign.ident.getDec().getType() == null)
+		Type id = statementAssign.ident.getDec().getType();
+		
+		if(statementAssign.ident.getDec() instanceof ConstDec)
 		{
+			throw new TypeCheckException("cannot reassign constant");
+		}
+		if(id == null && t!=null)
+		{
+			System.out.println("in cond 1");
+			System.out.println(t);
+			System.out.println(id);
+			
 			statementAssign.ident.getDec().setType(t);
+			System.out.println(statementAssign.ident.getDec().getType());
+			change = true;
+		}
+		else if (t==null && id!=null)
+		{
+			System.out.println("in cond 2");
+			System.out.println(t);
+			System.out.println(id);
+			statementAssign.expression.setType(id);
+			change = true;
+		}
+
+		else if (t == id)
+		{
+			System.out.println("in cond 3");
+			System.out.println(change);
+			System.out.println(t);
+			System.out.println(id);
+			//change = false;
+			return null;
 		}
 		else
 		{
-			Type id = statementAssign.ident.getDec().getType();
-			if (t == id)
-			{
-				return null;
-			}
-			else
-			{
-				throw new TypeCheckException("Type mismatch in statement assign");
-			}
+			throw new TypeCheckException("Type mismatch in statement assign");
 		}
+		
 		return null;
 	}
 
@@ -105,6 +142,13 @@ public class TypeCheckVisitor implements ASTVisitor {
 		// TODO Auto-generated method stub
 		if(statementCall.ident.getDec().getType() == Type.PROCEDURE)
 		{
+			return null;
+		}
+		else if(statementCall.ident.getDec().getType() == null)
+		{
+			System.out.println("in statement call making fullytyped false");
+			
+			fullytyped = false;
 			return null;
 		}
 		else
@@ -126,14 +170,8 @@ public class TypeCheckVisitor implements ASTVisitor {
 		}
 		else if(statementInput.ident.getDec().getType() == null)
 		{
-			if(firstpass)
-			{
-				fullytyped = false;
-			}
-			else
-			{
-				fullytyped = true;
-			}
+			System.out.println("in statement input making fullytyped false");
+			fullytyped = false;
 			return null;
 		}
 		else
@@ -145,24 +183,76 @@ public class TypeCheckVisitor implements ASTVisitor {
 	@Override
 	public Object visitStatementOutput(StatementOutput statementOutput, Object arg) throws PLPException {
 		// TODO Auto-generated method stub
+		
+		statementOutput.expression.visit(this, arg);
+		Type t = statementOutput.expression.getType();
+		System.out.println(statementOutput.expression);
+		if(t == Type.NUMBER ||t == Type.BOOLEAN ||t == Type.STRING)
+		{
+			
+			return null;
+		}
+		else
+		{
+			System.out.println("in statement output making fullytyped false");
+			fullytyped = false;
+		}
 		return null;
 	}
 
 	@Override
 	public Object visitStatementBlock(StatementBlock statementBlock, Object arg) throws PLPException {
 		// TODO Auto-generated method stub
+		
+		for(Statement s : statementBlock.statements)
+		{
+			s.visit(this, arg);
+		}
 		return null;
 	}
 
 	@Override
 	public Object visitStatementIf(StatementIf statementIf, Object arg) throws PLPException {
 		// TODO Auto-generated method stub
+		
+		statementIf.expression.visit(this, arg);
+		statementIf.statement.visit(this, arg);
+		if(statementIf.expression.getType() == Type.BOOLEAN)
+		{
+			return null;
+		}
+		else if (statementIf.expression.getType() == null)
+		{
+			System.out.println("in statement if making fullytyped false");
+			fullytyped = false;
+		}
+		else
+		{
+			throw new TypeCheckException("Illegal guard expression");
+		}
 		return null;
 	}
 
 	@Override
 	public Object visitStatementWhile(StatementWhile statementWhile, Object arg) throws PLPException {
 		// TODO Auto-generated method stub
+		System.out.println("in while");
+		statementWhile.expression.visit(this, arg);
+		statementWhile.statement.visit(this, arg);
+		
+		if(statementWhile.expression.getType() == Type.BOOLEAN)
+		{
+			return null;
+		}
+		else if (statementWhile.expression.getType() == null)
+		{
+			System.out.println("in statement while making fullytyped false");
+			fullytyped = false;
+		}
+		else
+		{
+			throw new TypeCheckException("Illegal guard expression");
+		}
 		return null;
 	}
 
@@ -175,17 +265,45 @@ public class TypeCheckVisitor implements ASTVisitor {
 		Type t2 = expressionBinary.e1.getType();
 		IToken operator = expressionBinary.op;
 		
-		if(t1==null && t2==null)
+		if(t1 != null && t2 !=null && expressionBinary.getType()!=null)
 		{
-			throw new TypeCheckException("Type cannot be determined");
+			//fullytyped = true;
+			//change = false;
+			return null;
 		}
+		
+		change = true;
+		
+		if(t1==null && t2==null && expressionBinary.getType() == null)
+		{
+			System.out.println("in exp binary making fullytyped false");
+			System.out.println(change);
+			System.out.println(expressionBinary.e0);
+			System.out.println(expressionBinary.e1);
+			fullytyped = false;
+			return null;
+		}
+		
 		
 		
 		//PLUS
 		//α x α  → α, where α ∈ {NUMBER, STRING, BOOLEAN}
 		if(operator.getKind() == Kind.PLUS)
 		{
-			if(t1 == null && t2 == Type.NUMBER ||
+			
+			//if the expression already has a type from previous calculations
+			//for example (a+b) = 2 in which (a+b) got the type NUMBER
+			if(expressionBinary.getType() == Type.BOOLEAN|| expressionBinary.getType() == Type.NUMBER || 
+					expressionBinary.getType() == Type.STRING)
+			{
+				expressionBinary.e0.setType(expressionBinary.getType());
+				expressionBinary.e1.setType(expressionBinary.getType());
+				
+			}
+			
+			
+			//cases where type of expressions is determined from children
+			else if(t1 == null && t2 == Type.NUMBER ||
 				t1 == null && t2 == Type.STRING||
 				t1 == null && t2 == Type.BOOLEAN)
 			{
@@ -215,9 +333,19 @@ public class TypeCheckVisitor implements ASTVisitor {
 		//NUMBER x NUMBER → NUMBER
 		else if(operator.getKind() == Kind.MINUS||operator.getKind() == Kind.DIV||operator.getKind() == Kind.MOD)
 		{
-			if(t1 == null && t2 == Type.NUMBER)
+			
+			if(expressionBinary.getType() == Type.NUMBER)
+			{
+				expressionBinary.e0.setType(expressionBinary.getType());
+				expressionBinary.e1.setType(expressionBinary.getType());
+				
+			}
+			
+			else if(t1 == null && t2 == Type.NUMBER)
 			{
 				expressionBinary.e0.setType(t2);
+				System.out.println("\n in expression binary line 332");
+				System.out.println( expressionBinary.e0);
 				expressionBinary.setType(t2);
 			}
 			else if (t1 == Type.NUMBER || t2 == null )
@@ -240,6 +368,13 @@ public class TypeCheckVisitor implements ASTVisitor {
 		//α x α  → α, where α ∈ {NUMBER, BOOLEAN}
 		else if (operator.getKind() == Kind.TIMES)
 		{
+			if(expressionBinary.getType() == Type.BOOLEAN|| expressionBinary.getType() == Type.NUMBER)
+			{
+				expressionBinary.e0.setType(expressionBinary.getType());
+				expressionBinary.e1.setType(expressionBinary.getType());	
+			}
+			
+			
 			if(t1 == null && t2 == Type.NUMBER ||
 				t1 == null && t2 == Type.BOOLEAN)
 			{
@@ -270,26 +405,38 @@ public class TypeCheckVisitor implements ASTVisitor {
 		else if (operator.getKind() == Kind.EQ ||operator.getKind() == Kind.NEQ|| operator.getKind() == Kind.LT || 
 				operator.getKind() == Kind.LE || operator.getKind() == Kind.GT|| operator.getKind() == Kind.GE)
 		{
+			
+			//not sure if this situation would occur
+//			if(expressionBinary.getType() == Type.BOOLEAN)
+//			{
+//				//expressionBinary.e0.setType(expressionBinary.getType());
+//				//expressionBinary.e1.setType(expressionBinary.getType());
+//				
+//			}
+			
 			if(t1 == null && t2 == Type.NUMBER ||
 				t1 == null && t2 == Type.STRING||
 				t1 == null && t2 == Type.BOOLEAN)
 			{
-				expressionBinary.e0.setType(Type.BOOLEAN);
+				expressionBinary.e0.setType(t2);
 				expressionBinary.setType(Type.BOOLEAN);
 			}
+			
 			else if(t1 == Type.NUMBER && t2 == null ||
 					t1 == Type.STRING && t2 == null||
 					t1 == Type.BOOLEAN && t2 == null)
 			{
-				expressionBinary.e1.setType(Type.BOOLEAN);
+				expressionBinary.e1.setType(t1);
 				expressionBinary.setType(Type.BOOLEAN);
 			}
+			
 			else if(t1 == Type.NUMBER && t2 == Type.NUMBER ||
 					t1 == Type.STRING && t2 == Type.STRING||
 					t1 == Type.BOOLEAN && t2 == Type.BOOLEAN)
 			{
 				expressionBinary.setType(Type.BOOLEAN);
 			}
+			
 			else
 			{
 				throw new TypeCheckException("Invalid type"); 
@@ -307,6 +454,25 @@ public class TypeCheckVisitor implements ASTVisitor {
 	@Override
 	public Object visitExpressionIdent(ExpressionIdent expressionIdent, Object arg) throws PLPException {
 		// TODO Auto-generated method stub
+		Type ident = expressionIdent.getDec().getType();
+		Type exp = expressionIdent.getType();
+		if(ident != null && exp ==null)
+		{
+			expressionIdent.setType(ident);
+		}
+		else if(ident == null && exp !=null)
+		{
+			expressionIdent.getDec().setType(exp);
+		}
+		else if (ident == exp)
+		{
+			return null;
+		}
+		else
+		{
+			fullytyped = false;
+		}
+		
 		return null;
 	}
 
@@ -320,23 +486,33 @@ public class TypeCheckVisitor implements ASTVisitor {
 	@Override
 	public Object visitExpressionStringLit(ExpressionStringLit expressionStringLit, Object arg) throws PLPException {
 		// TODO Auto-generated method stub
-		expressionStringLit.setType(Type.NUMBER);
+		expressionStringLit.setType(Type.STRING);
 		return null;
 	}
 
 	@Override
 	public Object visitExpressionBooleanLit(ExpressionBooleanLit expressionBooleanLit, Object arg) throws PLPException {
 		// TODO Auto-generated method stub
-		expressionBooleanLit.setType(Type.NUMBER);
+		expressionBooleanLit.setType(Type.BOOLEAN);
 		return null;
 	}
 
 	@Override
 	public Object visitProcedure(ProcDec procDec, Object arg) throws PLPException {
 		// TODO Auto-generated method stub
+		if(procDec.getType() == null)
+		{
+			procDec.setType(Type.PROCEDURE);
+			change  = true;
+			procDec.block.visit(this, 1);
+			
+		}
+		else
+		{
+			procDec.setType(Type.PROCEDURE);
+			procDec.block.visit(this, 1);
+		}
 		
-		procDec.setType(Type.PROCEDURE);
-		procDec.block.visit(this, 1);
 		return null;
 	}
 
@@ -373,7 +549,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 	public Object visitIdent(Ident ident, Object arg) throws PLPException {
 		// TODO Auto-generated method stub
 		
-		ident.getDec().setType();
+		//ident.getDec().setType();
 		return null;
 	}
 

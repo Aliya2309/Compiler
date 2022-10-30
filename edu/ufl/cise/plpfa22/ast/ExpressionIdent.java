@@ -6,6 +6,7 @@ package edu.ufl.cise.plpfa22.ast;
 
 import edu.ufl.cise.plpfa22.IToken;
 import edu.ufl.cise.plpfa22.PLPException;
+import edu.ufl.cise.plpfa22.ast.Types.Type;
 
 public class ExpressionIdent extends Expression {
 	
@@ -27,6 +28,12 @@ public class ExpressionIdent extends Expression {
 		return "ExpressionIdent [" + (dec != null ? "dec=" + dec + ", " : "")
 				+ (type != null ? "type=" + type + ", " : "") + (firstToken != null ? "firstToken=" + firstToken : "")
 				+ "]";
+	}
+	
+	@Override
+	public void setType(Type type) {
+		this.type = type;
+		this.dec.setType(type);
 	}
 
 

@@ -68,7 +68,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 //		firstpass=false;
 		while(change)
 		{
-			System.out.println("Next Pass!\n\n");
+			//System.out.println("Next Pass!\n\n");
 			fullytyped = true;
 			change = false;
 			program.block.visit(this, 1);
@@ -103,29 +103,29 @@ public class TypeCheckVisitor implements ASTVisitor {
 		}
 		if(id == null && t!=null)
 		{
-			System.out.println("in cond 1");
-			System.out.println(t);
-			System.out.println(id);
+			//System.out.println("in cond 1");
+			//System.out.println(t);
+			//System.out.println(id);
 			
 			statementAssign.ident.getDec().setType(t);
-			System.out.println(statementAssign.ident.getDec().getType());
+			//System.out.println(statementAssign.ident.getDec().getType());
 			change = true;
 		}
 		else if (t==null && id!=null)
 		{
-			System.out.println("in cond 2");
-			System.out.println(t);
-			System.out.println(id);
+			//System.out.println("in cond 2");
+			//System.out.println(t);
+			//System.out.println(id);
 			statementAssign.expression.setType(id);
 			change = true;
 		}
 
 		else if (t == id)
 		{
-			System.out.println("in cond 3");
-			System.out.println(change);
-			System.out.println(t);
-			System.out.println(id);
+			//System.out.println("in cond 3");
+			//System.out.println(change);
+			//System.out.println(t);
+			//System.out.println(id);
 			//change = false;
 			return null;
 		}
@@ -146,7 +146,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 		}
 		else if(statementCall.ident.getDec().getType() == null)
 		{
-			System.out.println("in statement call making fullytyped false");
+			//System.out.println("in statement call making fullytyped false");
 			
 			fullytyped = false;
 			return null;
@@ -170,7 +170,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 		}
 		else if(statementInput.ident.getDec().getType() == null)
 		{
-			System.out.println("in statement input making fullytyped false");
+			//System.out.println("in statement input making fullytyped false");
 			fullytyped = false;
 			return null;
 		}
@@ -186,7 +186,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 		
 		statementOutput.expression.visit(this, arg);
 		Type t = statementOutput.expression.getType();
-		System.out.println(statementOutput.expression);
+		//System.out.println(statementOutput.expression);
 		if(t == Type.NUMBER ||t == Type.BOOLEAN ||t == Type.STRING)
 		{
 			
@@ -194,7 +194,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 		}
 		else
 		{
-			System.out.println("in statement output making fullytyped false");
+			//System.out.println("in statement output making fullytyped false");
 			fullytyped = false;
 		}
 		return null;
@@ -223,7 +223,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 		}
 		else if (statementIf.expression.getType() == null)
 		{
-			System.out.println("in statement if making fullytyped false");
+			//System.out.println("in statement if making fullytyped false");
 			fullytyped = false;
 		}
 		else
@@ -236,7 +236,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 	@Override
 	public Object visitStatementWhile(StatementWhile statementWhile, Object arg) throws PLPException {
 		// TODO Auto-generated method stub
-		System.out.println("in while");
+		//System.out.println("in while");
 		statementWhile.expression.visit(this, arg);
 		statementWhile.statement.visit(this, arg);
 		
@@ -246,7 +246,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 		}
 		else if (statementWhile.expression.getType() == null)
 		{
-			System.out.println("in statement while making fullytyped false");
+			//System.out.println("in statement while making fullytyped false");
 			fullytyped = false;
 		}
 		else
@@ -276,10 +276,10 @@ public class TypeCheckVisitor implements ASTVisitor {
 		
 		if(t1==null && t2==null && expressionBinary.getType() == null)
 		{
-			System.out.println("in exp binary making fullytyped false");
-			System.out.println(change);
-			System.out.println(expressionBinary.e0);
-			System.out.println(expressionBinary.e1);
+			//System.out.println("in exp binary making fullytyped false");
+			//System.out.println(change);
+			//System.out.println(expressionBinary.e0);
+			//System.out.println(expressionBinary.e1);
 			fullytyped = false;
 			return null;
 		}
@@ -344,8 +344,8 @@ public class TypeCheckVisitor implements ASTVisitor {
 			else if(t1 == null && t2 == Type.NUMBER)
 			{
 				expressionBinary.e0.setType(t2);
-				System.out.println("\n in expression binary line 332");
-				System.out.println( expressionBinary.e0);
+				//System.out.println("\n in expression binary line 332");
+				//System.out.println( expressionBinary.e0);
 				expressionBinary.setType(t2);
 			}
 			else if (t1 == Type.NUMBER || t2 == null )

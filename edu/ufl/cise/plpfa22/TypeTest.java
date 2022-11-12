@@ -564,6 +564,39 @@ void expressionsOnStrings1(TestInfo testInfo) throws PLPException{
 			""";
 	runTest(input,testInfo);
 }
+
+@Test
+void testcase0(TestInfo testInfo) throws PLPException
+{
+	String input = """
+			CONST a=3;
+			VAR x,y,z;
+			PROCEDURE p;
+			  VAR j;
+			  BEGIN
+			     ? x;
+			     IF x = 0 THEN ! j ;
+			     WHILE j < 24 DO z:=333
+			  END;
+			! z
+			.
+			""";
+	runTest(input,testInfo);
+
+}
+
+@Test
+void testcase1(TestInfo testInfo) throws PLPException
+{
+	String input = """
+			CONST a=3;
+			VAR x,y,z;
+			IF x + y > 3 THEN ! x
+			.
+			""";
+	runTest(input,testInfo);
+
+}
 }
 
 

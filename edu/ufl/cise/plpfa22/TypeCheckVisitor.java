@@ -4,6 +4,7 @@ import edu.ufl.cise.plpfa22.IToken.Kind;
 import edu.ufl.cise.plpfa22.ast.ASTVisitor;
 import edu.ufl.cise.plpfa22.ast.Block;
 import edu.ufl.cise.plpfa22.ast.ConstDec;
+import edu.ufl.cise.plpfa22.ast.Expression;
 import edu.ufl.cise.plpfa22.ast.ExpressionBinary;
 import edu.ufl.cise.plpfa22.ast.ExpressionBooleanLit;
 import edu.ufl.cise.plpfa22.ast.ExpressionIdent;
@@ -97,9 +98,13 @@ public class TypeCheckVisitor implements ASTVisitor {
 		statementAssign.ident.visit(this, arg);
 		Type id = statementAssign.ident.getDec().getType();
 		
-		if(statementAssign.ident.getDec() instanceof ConstDec)
+		if(statementAssign.ident.getDec() instanceof ConstDec )
 		{
 			throw new TypeCheckException("cannot reassign constant");
+		}
+		if(statementAssign.ident.getDec() instanceof ProcDec)
+		{
+			throw new TypeCheckException("cannot reassign procedure");
 		}
 		if(id == null && t!=null)
 		{
@@ -162,7 +167,15 @@ public class TypeCheckVisitor implements ASTVisitor {
 	public Object visitStatementInput(StatementInput statementInput, Object arg) throws PLPException {
 		// TODO Auto-generated method stub
 		
-		if(statementInput.ident.getDec().getType() == Type.NUMBER || 
+		if(statementInput.ident.getDec() instanceof ConstDec)
+		{
+			throw new TypeCheckException("Cannot take input on constant");
+		}
+		if(statementInput.ident.getDec() instanceof ProcDec)
+		{
+			throw new TypeCheckException("Cannot take input on procedure");
+		}
+		else if(statementInput.ident.getDec().getType() == Type.NUMBER || 
 			statementInput.ident.getDec().getType() == Type.STRING ||
 			statementInput.ident.getDec().getType() == Type.BOOLEAN)
 		{
@@ -298,6 +311,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 			{
 				expressionBinary.e0.setType(expressionBinary.getType());
 				expressionBinary.e1.setType(expressionBinary.getType());
+				checkIfExpressionIdentB(expressionBinary.e0, expressionBinary.e1, expressionBinary.getType());
 				
 			}
 			
@@ -308,6 +322,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 				t1 == null && t2 == Type.BOOLEAN)
 			{
 				expressionBinary.e0.setType(t2);
+				checkIfExpressionIdent(expressionBinary.e0, t2);
 				expressionBinary.setType(t2);
 			}
 			else if (t1 == Type.NUMBER && t2 == null ||
@@ -315,6 +330,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 					t1 == Type.BOOLEAN && t2 == null)
 			{
 				expressionBinary.e1.setType(t1);
+				checkIfExpressionIdent(expressionBinary.e1, t1);
 				expressionBinary.setType(t1);
 			}
 			else if(t1 == Type.NUMBER && t2 == Type.NUMBER ||
@@ -338,6 +354,8 @@ public class TypeCheckVisitor implements ASTVisitor {
 			{
 				expressionBinary.e0.setType(expressionBinary.getType());
 				expressionBinary.e1.setType(expressionBinary.getType());
+				checkIfExpressionIdentB(expressionBinary.e0, expressionBinary.e1, expressionBinary.getType());
+				
 				
 			}
 			
@@ -346,11 +364,13 @@ public class TypeCheckVisitor implements ASTVisitor {
 				expressionBinary.e0.setType(t2);
 				//System.out.println("\n in expression binary line 332");
 				//System.out.println( expressionBinary.e0);
+				checkIfExpressionIdent(expressionBinary.e0, t2);
 				expressionBinary.setType(t2);
 			}
 			else if (t1 == Type.NUMBER || t2 == null )
 			{
 				expressionBinary.e1.setType(t1);
+				checkIfExpressionIdent(expressionBinary.e1, t1);
 				expressionBinary.setType(t1);
 			}
 			else if(t1 == Type.NUMBER && t2 == Type.NUMBER)
@@ -371,7 +391,8 @@ public class TypeCheckVisitor implements ASTVisitor {
 			if(expressionBinary.getType() == Type.BOOLEAN|| expressionBinary.getType() == Type.NUMBER)
 			{
 				expressionBinary.e0.setType(expressionBinary.getType());
-				expressionBinary.e1.setType(expressionBinary.getType());	
+				expressionBinary.e1.setType(expressionBinary.getType());
+				checkIfExpressionIdentB(expressionBinary.e0, expressionBinary.e1, expressionBinary.getType());
 			}
 			
 			
@@ -380,6 +401,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 			{
 				expressionBinary.setType(t2);
 				expressionBinary.e0.setType(t2);
+				checkIfExpressionIdent(expressionBinary.e0, t2);
 					
 			}
 			else if(t1 == Type.NUMBER && t2 == null ||
@@ -387,6 +409,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 			{
 				expressionBinary.setType(t1);
 				expressionBinary.e1.setType(t1);
+				checkIfExpressionIdent(expressionBinary.e1, t1);
 			}
 			else if(t1 == Type.NUMBER && t2 == Type.NUMBER ||
 				t1 == Type.BOOLEAN && t2 == Type.BOOLEAN)
@@ -419,6 +442,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 				t1 == null && t2 == Type.BOOLEAN)
 			{
 				expressionBinary.e0.setType(t2);
+				checkIfExpressionIdent(expressionBinary.e0, t2);
 				expressionBinary.setType(Type.BOOLEAN);
 			}
 			
@@ -427,6 +451,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 					t1 == Type.BOOLEAN && t2 == null)
 			{
 				expressionBinary.e1.setType(t1);
+				checkIfExpressionIdent(expressionBinary.e1, t1);
 				expressionBinary.setType(Type.BOOLEAN);
 			}
 			
@@ -552,6 +577,26 @@ public class TypeCheckVisitor implements ASTVisitor {
 		//ident.getDec().setType();
 		return null;
 	}
+	
+	public void checkIfExpressionIdentB(Expression e0, Expression e1, Type t)
+	{
+		if(e0 instanceof ExpressionIdent)
+		{
+			((ExpressionIdent) e0).getDec().setType(t);
+		}
+		if (e1 instanceof ExpressionIdent)
+		{
+			((ExpressionIdent) e1).getDec().setType(t);
+		}
+	}
+	public void checkIfExpressionIdent(Expression e0, Type t)
+	{
+		if(e0 instanceof ExpressionIdent)
+		{
+			((ExpressionIdent) e0).getDec().setType(t);
+		}
+	}
+
 
 
 }

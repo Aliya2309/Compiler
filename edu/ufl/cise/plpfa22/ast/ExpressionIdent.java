@@ -33,7 +33,7 @@ public class ExpressionIdent extends Expression {
 	@Override
 	public void setType(Type type) {
 		this.type = type;
-		this.dec.setType(type);
+		//this.dec.setType(type);
 	}
 
 

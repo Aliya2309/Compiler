@@ -136,7 +136,15 @@ public class CodeGenVisitor implements ASTVisitor, Opcodes {
 	@Override
 	public Object visitStatementIf(StatementIf statementIf, Object arg) throws PLPException {
 		//todo
-		throw new UnsupportedOperationException();
+		//throw new UnsupportedOperationException();
+		MethodVisitor mv = (MethodVisitor) arg;
+		statementIf.expression.visit(this, arg);
+		Label l1 = new Label();
+		mv.visitJumpInsn(IFEQ, l1);
+		statementIf.statement.visit(this, arg);
+		
+		mv.visitLabel(l1);
+		return null;
 	}
 
 	@Override
@@ -355,9 +363,97 @@ public class CodeGenVisitor implements ASTVisitor, Opcodes {
 					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "concat", "(Ljava/lang/String;)Ljava/lang/String;", false);
 				}
 				
-				default -> {
+				case EQ ->
+				{
+					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "equals", "(Ljava/lang/Object;)Z", false);
+				}
+				
+				case NEQ ->
+				{
+					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "equals", "(Ljava/lang/Object;)Z", false);
+					Label l1 = new Label();
+					Label l2 = new Label();
+					mv.visitJumpInsn(IFEQ, l1);
+					mv.visitInsn(ICONST_0);
+					mv.visitJumpInsn(GOTO, l2);
+					mv.visitLabel(l1);
+					mv.visitInsn(ICONST_1);
+					mv.visitLabel(l2);
+				}
+				
+				case LT ->
+				{
+					Label l1 = new Label();
+					Label l2 = new Label();
+					mv.visitInsn(SWAP);
+					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "startsWith", "(Ljava/lang/String;)Z", false);
+					
+					mv.visitJumpInsn(IFEQ, l1);
+					expressionBinary.e0.visit(this, arg);
+					expressionBinary.e1.visit(this, arg);
+					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "equals", "(Ljava/lang/Object;)Z", false);
+					mv.visitJumpInsn(IFNE, l1);
+					mv.visitInsn(ICONST_1);
+					mv.visitJumpInsn(GOTO, l2);
+					mv.visitLabel(l1);
+					mv.visitInsn(ICONST_0);
+					mv.visitLabel(l2);
+					
+				}
+				
+				case LE ->
+				{
+					Label l1 = new Label();
+					Label l2 = new Label();
+					mv.visitInsn(SWAP);
+					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "startsWith", "(Ljava/lang/String;)Z", false);
+					mv.visitJumpInsn(IFEQ, l1);
+					
+					mv.visitInsn(ICONST_1);
+					mv.visitJumpInsn(GOTO, l2);
+					mv.visitLabel(l1);
+					mv.visitInsn(ICONST_0);
+					mv.visitLabel(l2);
+				}
+				
+				case GT ->
+				{
+					Label l1 = new Label();
+					Label l2 = new Label();
+					//mv.visitInsn(SWAP);
+					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "endsWith", "(Ljava/lang/String;)Z", false);
+					
+					mv.visitJumpInsn(IFEQ, l1);
+					expressionBinary.e0.visit(this, arg);
+					expressionBinary.e1.visit(this, arg);
+					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "equals", "(Ljava/lang/Object;)Z", false);
+					mv.visitJumpInsn(IFNE, l1);
+					mv.visitInsn(ICONST_1);
+					mv.visitJumpInsn(GOTO, l2);
+					mv.visitLabel(l1);
+					mv.visitInsn(ICONST_0);
+					mv.visitLabel(l2);
+				}
+				
+				case GE ->
+				{
+					Label l1 = new Label();
+					Label l2 = new Label();
+					mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "endsWith", "(Ljava/lang/String;)Z", false);
+					mv.visitJumpInsn(IFEQ, l1);
+					
+					mv.visitInsn(ICONST_1);
+					mv.visitJumpInsn(GOTO, l2);
+					mv.visitLabel(l1);
+					mv.visitInsn(ICONST_0);
+					mv.visitLabel(l2);
+				}
+				default -> 
+				{
 					throw new IllegalStateException("code gen bug in visitExpressionBinary BOOLEAN");
 				}
+				
+				
 			};
 		}
 		default -> {
@@ -384,7 +480,7 @@ public class CodeGenVisitor implements ASTVisitor, Opcodes {
 		//todo
 		//throw new UnsupportedOperationException();
 		MethodVisitor mv = (MethodVisitor)arg;
-		mv.visitLdcInsn(expressionStringLit.getFirstToken().getText());
+		mv.visitLdcInsn(expressionStringLit.getFirstToken().getStringValue());
 		return null;
 	}
 

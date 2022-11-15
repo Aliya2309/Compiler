@@ -1,5 +1,7 @@
 package edu.ufl.cise.plpfa22;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Method;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,6 +9,7 @@ import org.junit.jupiter.api.TestInfo;
 
 import edu.ufl.cise.plpfa22.CodeGenUtils.DynamicClassLoader;
 import edu.ufl.cise.plpfa22.ast.ASTNode;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class CodeGenTests {
@@ -21,6 +24,12 @@ public class CodeGenTests {
 	 * @return
 	 * @throws Exception
 	 */
+	
+	private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+    private final PrintStream originalOut = System.out;
+    private final PrintStream originalErr = System.err;
+
 	byte[] compile(String input, String className, String packageName) throws Exception {
 		show("*****************");
 		show(input);
@@ -90,7 +99,7 @@ public class CodeGenTests {
 	@Test
 	public void numout(TestInfo testInfo)throws Exception {
 		String input = """
-				! 3=3
+				! 3
 				.
 				""";
 		String shortClassName = "prog";
@@ -100,7 +109,19 @@ public class CodeGenTests {
 		show(CodeGenUtils.bytecodeToString(bytecode));
 		Object[] args = new Object[1];  
 		String className = "edu.ufl.cise.plpfa22.prog";
-		loadClassAndRunMethod(bytecode, className, "main", args);
+		
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        loadClassAndRunMethod(bytecode, className, "main", args);
+        String expected = """
+        		3
+        		""";
+        
+        
+        assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+        System.setOut(originalOut);
+        System.setErr(originalErr);
+
 	
 	}
 
@@ -309,6 +330,7 @@ public class CodeGenTests {
 	public void stringEqOps(TestInfo testInfo) throws Exception {
 		String input = """
 				BEGIN
+				! "red" + "blue";
 				! "red" = "blue";
 				! "red"= "red";
 				! "red" # "blue";
@@ -364,7 +386,576 @@ public class CodeGenTests {
 		loadClassAndRunMethod(bytecode, className, "main", args);		
 	}
 	
-	}
+	
+	
+	
+	
+	@DisplayName("stringOut1")
+    @Test
+    public void stringout1(TestInfo testInfo)throws Exception {
+        String input = """
+                ! "hello world"
+                .
+                """;
+        String shortClassName = "prog";
+        String JVMpackageName = "edu/ufl/cise/plpfa22";
+        byte[] bytecode = compile(input, shortClassName, JVMpackageName);
+        show(CodeGenUtils.bytecodeToString(bytecode));
+        
+        Object[] args = new Object[1];  
+        String className = "edu.ufl.cise.plpfa22.prog";
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        loadClassAndRunMethod(bytecode, className, "main", args);
+        String expected = """
+                hello world
+                """;
+        
+        
+        assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+        System.setOut(originalOut);
+        System.setErr(originalErr);
+    }
+    
+    @DisplayName("booleanOut1")
+    @Test
+    public void booleanOut1(TestInfo testInfo)throws Exception {
+        String input = """
+                ! TRUE
+                .
+                """;
+        String shortClassName = "prog";
+        String JVMpackageName = "edu/ufl/cise/plpfa22";
+        byte[] bytecode = compile(input, shortClassName, JVMpackageName);
+        show(CodeGenUtils.bytecodeToString(bytecode));
+        
+        Object[] args = new Object[1];  
+        String className = "edu.ufl.cise.plpfa22.prog";
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        loadClassAndRunMethod(bytecode, className, "main", args);
+        String expected = """
+                true
+                """;
+        
+        
+        assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+        System.setOut(originalOut);
+        System.setErr(originalErr);
+    }    
+    
+    @DisplayName("statementBlock1")
+    @Test
+    public void statementBlock1(TestInfo testInfo)throws Exception{
+        String input = """
+            BEGIN 
+            ! 3;
+            ! FALSE;
+            ! "hey, it works!"
+            END
+            .
+            """;
+        String shortClassName = "prog";
+        String JVMpackageName = "edu/ufl/cise/plpfa22";
+        byte[] bytecode = compile(input, shortClassName, JVMpackageName);
+        show(CodeGenUtils.bytecodeToString(bytecode));
+        
+
+        Object[] args = new Object[1];  
+        String className = "edu.ufl.cise.plpfa22.prog";
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        loadClassAndRunMethod(bytecode, className, "main", args);
+        String expected = """
+                3
+                false
+                hey, it works!
+                """;
+        
+        
+        assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+        System.setOut(originalOut);
+        System.setErr(originalErr);
+    }    
+    
+    @DisplayName("intOps1")
+    @Test
+    public void intOps1(TestInfo testInfo)throws Exception{
+        String input = """
+            BEGIN 
+            ! 1+3;
+            ! 7-3;
+            ! 2*2;
+            ! 16/4;
+            ! 20%8;
+            END
+            .
+            """;
+        String shortClassName = "prog";
+        String JVMpackageName = "edu/ufl/cise/plpfa22";
+        byte[] bytecode = compile(input, shortClassName, JVMpackageName);
+        show(CodeGenUtils.bytecodeToString(bytecode));
+        
+        Object[] args = new Object[1];  
+        String className = "edu.ufl.cise.plpfa22.prog";
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        loadClassAndRunMethod(bytecode, className, "main", args);
+        String expected = """
+                4
+                4
+                4
+                4
+                4
+                """;
+        
+        
+        assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+        System.setOut(originalOut);
+        System.setErr(originalErr);
+    }        
+    
+    @DisplayName("intEqOps1")
+    @Test
+    public void intEqOps1(TestInfo testInfo) throws Exception {
+        String input = """
+                BEGIN
+                ! 3 = 4;
+                ! 3 = 3;
+                ! 3 # 4;
+                ! 3 # 3
+                END
+                .
+                """;
+        
+        String shortClassName = "prog";
+        String JVMpackageName = "edu/ufl/cise/plpfa22";
+        byte[] bytecode = compile(input, shortClassName, JVMpackageName);
+        show(CodeGenUtils.bytecodeToString(bytecode));
+        
+        Object[] args = new Object[1];  
+        String className = "edu.ufl.cise.plpfa22.prog";
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        loadClassAndRunMethod(bytecode, className, "main", args);
+        String expected = """
+                false
+                true
+                true
+                false
+                """;
+        
+        
+        assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+        System.setOut(originalOut);
+        System.setErr(originalErr);
+        
+    }
+
+    @DisplayName("boolEqOps1")
+    @Test
+    public void boolEqOps1(TestInfo testInfo) throws Exception {
+        String input = """
+                BEGIN
+                ! TRUE = TRUE;
+                ! TRUE # TRUE;
+                ! FALSE = FALSE;
+                ! FALSE # FALSE;
+                ! TRUE = FALSE;
+                ! TRUE # FALSE;
+                ! FALSE = TRUE;
+                ! FALSE # TRUE;
+                END
+                .
+                """;
+        
+        String shortClassName = "prog";
+        String JVMpackageName = "edu/ufl/cise/plpfa22";
+        byte[] bytecode = compile(input, shortClassName, JVMpackageName);
+        show(CodeGenUtils.bytecodeToString(bytecode));
+        
+        Object[] args = new Object[1];  
+        String className = "edu.ufl.cise.plpfa22.prog";
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        loadClassAndRunMethod(bytecode, className, "main", args);
+        String expected = """
+                true
+                false
+                true
+                false
+                false
+                true
+                false
+                true
+                """;
+        
+        
+        assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+        System.setOut(originalOut);
+        System.setErr(originalErr);
+        
+    }
+    
+    
+    
+    @DisplayName("intRelOps1")
+    @Test
+    public void intRelOps1(TestInfo testInfo) throws Exception {
+        String input = """
+                BEGIN
+                ! 3 < 4;
+                ! 3 <= 4;
+                ! 3 > 4;
+                ! 3 >= 4;
+                ! 4 < 4;
+                ! 4 <= 4;
+                ! 4 > 4;
+                ! 4 >= 4;
+                ! 4 < 3;
+                ! 4 <= 3;
+                ! 4 > 3;
+                ! 4 >= 3                        
+                END
+                .
+                """;
+        
+        String shortClassName = "prog";
+        String JVMpackageName = "edu/ufl/cise/plpfa22";
+        byte[] bytecode = compile(input, shortClassName, JVMpackageName);
+        show(CodeGenUtils.bytecodeToString(bytecode));
+        
+        Object[] args = new Object[1];  
+        String className = "edu.ufl.cise.plpfa22.prog";
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        loadClassAndRunMethod(bytecode, className, "main", args);
+        String expected = """
+                true
+                true
+                false
+                false
+                false
+                true
+                false
+                true
+                false
+                false
+                true
+                true
+                """;
+        
+        
+        assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+        System.setOut(originalOut);
+        System.setErr(originalErr);        
+    }
+    
+    @DisplayName("boolRelOps1")
+    @Test
+    public void boolRelOps1(TestInfo testInfo) throws Exception {
+        String input = """
+                BEGIN
+                ! FALSE < TRUE;
+                ! FALSE <= TRUE;
+                ! FALSE > TRUE;
+                ! FALSE >= TRUE;
+                ! TRUE < TRUE;
+                ! TRUE <= TRUE;
+                ! TRUE > TRUE;
+                ! TRUE >= TRUE;
+                ! TRUE < FALSE;
+                ! TRUE <= FALSE;
+                ! TRUE > FALSE;
+                ! TRUE >= FALSE    ;
+                ! FALSE < FALSE;
+                ! FALSE <= FALSE;
+                ! FALSE > FALSE;
+                ! FALSE >= FALSE                    
+                END
+                .
+                """;
+        
+        String shortClassName = "prog";
+        String JVMpackageName = "edu/ufl/cise/plpfa22";
+        byte[] bytecode = compile(input, shortClassName, JVMpackageName);
+        show(CodeGenUtils.bytecodeToString(bytecode));
+        
+        Object[] args = new Object[1];  
+        String className = "edu.ufl.cise.plpfa22.prog";
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        loadClassAndRunMethod(bytecode, className, "main", args);
+        String expected = """
+                true
+                true
+                false
+                false
+                false
+                true
+                false
+                true
+                false
+                false
+                true
+                true
+                false
+                true
+                false
+                true
+                """;
+        
+        
+        assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+        System.setOut(originalOut);
+        System.setErr(originalErr);        
+    }
+    
+    
+    @DisplayName("stringEqOps1")
+    @Test
+    public void stringEqOps1(TestInfo testInfo) throws Exception {
+        String input = """
+                BEGIN
+                ! "red" = "blue";
+                ! "red"= "red";
+                ! "red" # "blue";
+                ! "red" # "red"
+                END
+                .
+                """;
+        
+        String shortClassName = "prog";
+        String JVMpackageName = "edu/ufl/cise/plpfa22";
+        byte[] bytecode = compile(input, shortClassName, JVMpackageName);
+        show(CodeGenUtils.bytecodeToString(bytecode));
+        
+        Object[] args = new Object[1];  
+        String className = "edu.ufl.cise.plpfa22.prog";
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        loadClassAndRunMethod(bytecode, className, "main", args);
+        String expected = """
+                false
+                true
+                true
+                false
+                """;
+        
+        
+        assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+        System.setOut(originalOut);
+        System.setErr(originalErr);
+        
+    }
+    
+    
+    @DisplayName("stringRelOpsLt")
+    @Test
+    public void stringRelOpsLt(TestInfo testInfo) throws Exception {
+        String input = """
+                BEGIN
+                ! "FA" < "FALSE";
+                ! "FALSE" < "FALSE";
+                ! "SE" < "FALSE";                
+                END
+                .
+                """;
+        
+        String shortClassName = "prog";
+        String JVMpackageName = "edu/ufl/cise/plpfa22";
+        byte[] bytecode = compile(input, shortClassName, JVMpackageName);
+        show(CodeGenUtils.bytecodeToString(bytecode));
+        
+        Object[] args = new Object[1];  
+        String className = "edu.ufl.cise.plpfa22.prog";
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        loadClassAndRunMethod(bytecode, className, "main", args);
+        String expected = """
+                true
+                false
+                false
+                """;
+        
+        
+        assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+        System.setOut(originalOut);
+        System.setErr(originalErr);        
+    }
+    
+    @DisplayName("stringRelOpsLe")
+    @Test
+    public void stringRelOpsLe(TestInfo testInfo) throws Exception {
+        String input = """
+                BEGIN
+                ! "FA" <= "FALSE";
+                ! "FALSE" <= "FALSE";
+                ! "SE" <= "FALSE";                
+                END
+                .
+                """;
+        
+        String shortClassName = "prog";
+        String JVMpackageName = "edu/ufl/cise/plpfa22";
+        byte[] bytecode = compile(input, shortClassName, JVMpackageName);
+        show(CodeGenUtils.bytecodeToString(bytecode));
+        
+        Object[] args = new Object[1];  
+        String className = "edu.ufl.cise.plpfa22.prog";
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        loadClassAndRunMethod(bytecode, className, "main", args);
+        String expected = """
+                true
+                true
+                false
+                """;
+        
+        
+        assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+        System.setOut(originalOut);
+        System.setErr(originalErr);            
+    }
+    
+    @DisplayName("stringRelOpsGt")
+    @Test
+    public void stringRelOpsGt(TestInfo testInfo) throws Exception {
+        String input = """
+                BEGIN
+                ! "FA" > "FALSE";
+                ! "FALSE" > "FALSE";
+                ! "FALSE" > "SE";                
+                END
+                .
+                """;
+        
+        String shortClassName = "prog";
+        String JVMpackageName = "edu/ufl/cise/plpfa22";
+        byte[] bytecode = compile(input, shortClassName, JVMpackageName);
+        show(CodeGenUtils.bytecodeToString(bytecode));
+        
+        Object[] args = new Object[1];  
+        String className = "edu.ufl.cise.plpfa22.prog";
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        loadClassAndRunMethod(bytecode, className, "main", args);
+        String expected = """
+                false
+                false
+                true
+                """;
+        assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+        System.setOut(originalOut);
+        System.setErr(originalErr);        
+    }
+    
+    @DisplayName("stringRelOpsGe")
+    @Test
+    public void stringRelOpsGe(TestInfo testInfo) throws Exception {
+        String input = """
+                BEGIN
+                ! "FA" >= "FALSE";
+                ! "FALSE" >= "FALSE";
+                ! "FALSE" >= "SE";                
+                END
+                .
+                """;
+        
+        String shortClassName = "prog";
+        String JVMpackageName = "edu/ufl/cise/plpfa22";
+        byte[] bytecode = compile(input, shortClassName, JVMpackageName);
+        show(CodeGenUtils.bytecodeToString(bytecode));
+        
+        Object[] args = new Object[1];  
+        String className = "edu.ufl.cise.plpfa22.prog";
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        loadClassAndRunMethod(bytecode, className, "main", args);
+        String expected = """
+                false
+                true
+                true
+                """;
+        assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+        System.setOut(originalOut);
+        System.setErr(originalErr);            
+    }
+    
+    @DisplayName("stringOps")
+    @Test
+    public void stringOps(TestInfo testInfo)throws Exception{
+        String input = """
+            BEGIN 
+            ! "cd"+("ab"+""+"qw");
+            ! "cvd"+"avb"
+            END
+            .
+            """;
+        String shortClassName = "prog";
+        String JVMpackageName = "edu/ufl/cise/plpfa22";
+        byte[] bytecode = compile(input, shortClassName, JVMpackageName);
+        show(CodeGenUtils.bytecodeToString(bytecode));
+        
+        Object[] args = new Object[1];  
+        String className = "edu.ufl.cise.plpfa22.prog";
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        loadClassAndRunMethod(bytecode, className, "main", args);
+        String expected = """
+                cdabqw
+                cvdavb
+                """;
+        assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+        System.setOut(originalOut);
+        System.setErr(originalErr);        
+    }    
+    
+    @DisplayName("checkIf")
+    @Test
+    public void checkIf(TestInfo testInfo)throws Exception{
+        String input = """
+            BEGIN 
+            IF 4 < 5 THEN
+                BEGIN
+                    ! "ABC";
+                    IF FALSE THEN
+                        ! "QQQ"
+                    
+                END
+            ;
+            IF TRUE THEN
+                ! "PPP"
+            ;
+            ! "qwe"
+            END
+            .
+            """;
+        String shortClassName = "prog";
+        String JVMpackageName = "edu/ufl/cise/plpfa22";
+        byte[] bytecode = compile(input, shortClassName, JVMpackageName);
+        show(CodeGenUtils.bytecodeToString(bytecode));
+        
+        Object[] args = new Object[1];  
+        String className = "edu.ufl.cise.plpfa22.prog";
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        loadClassAndRunMethod(bytecode, className, "main", args);
+        String expected = """
+                ABC
+                PPP
+                qwe
+                """;
+        assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+        System.setOut(originalOut);
+        System.setErr(originalErr);        
+    }
+    
+}
+
+
+	
+	
 
 
 

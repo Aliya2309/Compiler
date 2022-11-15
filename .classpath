@@ -7,5 +7,15 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
+	<classpathentry kind="lib" path="D:/PLP/asm/asm-9.4.jar" sourcepath="D:/PLP/asm/asm-9.4-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/D:/PLP/asm/asm-9.4-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="D:/PLP/asm/asm-util-9.4.jar" sourcepath="D:/PLP/asm/asm-util-9.4-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/D:/PLP/asm/asm-util-9.4-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path=""/>
 </classpath>

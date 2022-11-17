@@ -671,7 +671,13 @@ public class CodeGenTests {
                 ! FALSE < FALSE;
                 ! FALSE <= FALSE;
                 ! FALSE > FALSE;
-                ! FALSE >= FALSE                    
+                ! FALSE >= FALSE     ;
+                ! FALSE = FALSE;
+                ! FALSE # FALSE;
+                ! FALSE = TRUE;
+                ! TRUE # TRUE;
+                ! TRUE = TRUE;
+                ! FALSE # TRUE             
                 END
                 .
                 """;
@@ -702,6 +708,12 @@ public class CodeGenTests {
                 false
                 true
                 false
+                true
+                true
+                false
+                false
+                false
+                true
                 true
                 """;
         
@@ -951,6 +963,82 @@ public class CodeGenTests {
         System.setErr(originalErr);        
     }
     
+    @DisplayName("checkIf")
+    @Test
+    public void checkIf2(TestInfo testInfo)throws Exception{
+        String input = """
+            BEGIN 
+            IF 5 < 5 THEN
+                BEGIN
+                    ! "ABC";
+                    IF FALSE THEN
+                        ! "QQQ"
+                    
+                END
+            ;
+            IF TRUE THEN
+                ! 5>7
+            ;
+            ! "qwe"
+            END
+            .
+            """;
+        String shortClassName = "prog";
+        String JVMpackageName = "edu/ufl/cise/plpfa22";
+        byte[] bytecode = compile(input, shortClassName, JVMpackageName);
+        show(CodeGenUtils.bytecodeToString(bytecode));
+        
+        Object[] args = new Object[1];  
+        String className = "edu.ufl.cise.plpfa22.prog";
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        loadClassAndRunMethod(bytecode, className, "main", args);
+        String expected = """
+                false
+                qwe
+                """;
+        assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+        System.setOut(originalOut);
+        System.setErr(originalErr);        
+    }
+    
+    
+    @DisplayName("stringRelOpsGe")
+    @Test
+    public void stringAndBooleanMath(TestInfo testInfo) throws Exception {
+       String input = """
+    BEGIN
+    ! "Red" + "Blue";
+    ! (3>5) * ("red" = "blue");  
+    ! FALSE * TRUE;   
+    ! FALSE + FALSE;  
+    ! FALSE + TRUE;   
+    END
+    .
+    """;
+
+       String shortClassName = "prog";
+       String JVMpackageName = "edu/ufl/cise/plpfa22";
+       byte[] bytecode = compile(input, shortClassName, JVMpackageName);
+       show(CodeGenUtils.bytecodeToString(bytecode));
+
+       Object[] args = new Object[1];
+       String className = "edu.ufl.cise.plpfa22.prog";
+       System.setOut(new PrintStream(outContent));
+       System.setErr(new PrintStream(errContent));
+       loadClassAndRunMethod(bytecode, className, "main", args);
+       String expected = """
+    RedBlue
+    false
+    false
+    false
+    true
+    """;
+       assertEquals(expected, outContent.toString().replaceAll("\\r\\n?", "\n"));
+       System.setOut(originalOut);
+       System.setErr(originalErr);
+    }
+
 }
 
 

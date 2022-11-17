@@ -257,7 +257,8 @@ public class CodeGenVisitor implements ASTVisitor, Opcodes {
 					mv.visitJumpInsn(GOTO, l3);
 					mv.visitLabel(l1);
 					mv.visitInsn(POP);    //discard value of e1
-					mv.visitInsn(ICONST_1);   //e0 is true
+					mv.visitInsn(ICONST_1); 
+					mv.visitJumpInsn(GOTO, l3);//e0 is true
 					mv.visitLabel(l2);
 					mv.visitInsn(ICONST_1);   //e1 is true
 					mv.visitLabel(l3);
@@ -269,7 +270,9 @@ public class CodeGenVisitor implements ASTVisitor, Opcodes {
 					Label l2 = new Label();
 					Label l3 = new Label();
 					mv.visitJumpInsn(IFNE, l1);
+					mv.visitInsn(POP);
 					mv.visitInsn(ICONST_0);
+					
 					mv.visitJumpInsn(GOTO, l3);
 					mv.visitLabel(l1);
 					mv.visitJumpInsn(IFNE, l2); 

@@ -12,6 +12,7 @@ public abstract class Declaration extends ASTNode {
 	//public static enum Type {NUMBER, BOOLEAN, STRING, PROCEDURE};
 	Type type;
 	int nest;
+	String descriptor;
 
 	public Declaration(IToken firstToken) {
 		super(firstToken);
@@ -23,6 +24,7 @@ public abstract class Declaration extends ASTNode {
 
 	public void setType(Type type) {
 		this.type = type;
+		setDescriptor();
 	}
 	
 	
@@ -34,6 +36,42 @@ public abstract class Declaration extends ASTNode {
 	 public int getNest() {
 	        return nest;
 	    }
+	 
+	 public void setDescriptor()
+	 {
+		 switch(this.type)
+		 {
+			case BOOLEAN ->
+			{
+				descriptor = "Z";
+			}
+			case NUMBER ->
+			{
+				descriptor = "I";
+			}
+				
+			case PROCEDURE ->
+			{
+				descriptor = "";
+			}
+			case STRING ->
+			{
+				descriptor = "Ljava/lang/String;";
+			}
+				
+			default ->
+			{
+				break;
+			}
+		 }
+	 }
+	 
+	 public String getDescriptor()
+	 {
+		 return descriptor;
+	 }
+	 
+	 public abstract String getName();
 
 
 }

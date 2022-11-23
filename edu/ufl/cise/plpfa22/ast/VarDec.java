@@ -25,6 +25,12 @@ public class VarDec extends Declaration {
 	public String toString() {
 		return "VarDec [" + (ident != null ? "ident=" + ident + ", " : "") + (type != null ? "type=" + type : "") + "]";
 	}
+	
+	public String getName()
+	 {
+		String name = new String(ident.getText()); 
+		return name;
+	 }
 
 
 

@@ -19,6 +19,17 @@ public class ConstDec extends Declaration {
 		this.ident = id;
 		this.val = val;
 	}
+	
+	public Object getVal()
+	{
+		return this.val;
+	}
+	
+	public String getName()
+	 {
+		String name = new String(ident.getText()); 
+		return name;
+	 }
 
 
 	@Override

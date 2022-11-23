@@ -18,6 +18,12 @@ public class ProcDec extends Declaration {
 		this.ident = name;
 		this.block = body;
 	}
+	
+	public String getName()
+	 {
+		String name = new String(ident.getText()); 
+		return name;
+	 }
 
 
 	@Override

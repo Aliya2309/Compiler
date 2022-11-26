@@ -11,6 +11,8 @@ public class ProcDec extends Declaration {
 
 	public final IToken ident;
 	public final Block block;
+	public String FQName;
+	public String outerName;
 	
 
 	public ProcDec(IToken firstToken, IToken name, Block body) {
@@ -24,6 +26,23 @@ public class ProcDec extends Declaration {
 		String name = new String(ident.getText()); 
 		return name;
 	 }
+	
+	
+	public void setFQName(String parentName)
+	{
+		this.outerName = parentName;
+		this.FQName = parentName + "$" + getName();
+	}
+	
+	public String getOuterName()
+	{
+		return this.outerName;
+	}
+	
+	public String getFQName()
+	{
+		return this.FQName;
+	}
 
 
 	@Override

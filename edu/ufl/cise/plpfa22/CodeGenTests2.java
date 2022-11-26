@@ -95,7 +95,7 @@ public class CodeGenTests2 {
 		}
 	}
 
-	/*
+	
 	@DisplayName("numOut")
 	@Test
 	public void numout(TestInfo testInfo)throws Exception {
@@ -350,7 +350,7 @@ public class CodeGenTests2 {
 		String className = "edu.ufl.cise.plpfa22.prog";
 		loadClassesAndRunMain(classes, className);	
 	}
-	*/
+	
 	
 	@DisplayName("constants")
 	@Test

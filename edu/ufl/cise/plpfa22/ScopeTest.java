@@ -544,6 +544,30 @@ class ScopeTest {
 		});
 	}
 	
+	@Test
+	void test13() throws PLPException
+	{
+		String input = """
+				
+				PROCEDURE p1;
+				CALL p3
+				;
+				PROCEDURE p2;
+					PROCEDURE p3;
+						CALL p1;
+						;
+					
+				
+				
+				
+						.
+						""";
+		assertThrows(ScopeException.class, () -> {// a declared twice in same scope
+			@SuppressWarnings("unused")
+			ASTNode ast = getDecoratedAST(input);
+		});
+		
+	}
 	
 	
 	

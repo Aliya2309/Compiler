@@ -10,6 +10,7 @@ import edu.ufl.cise.plpfa22.PLPException;
 public class VarDec extends Declaration {
 	
 	public final IToken ident;
+	String ownerclass;
 
 	public VarDec(IToken firstToken, IToken id) {
 		super(firstToken);
@@ -31,6 +32,16 @@ public class VarDec extends Declaration {
 		String name = new String(ident.getText()); 
 		return name;
 	 }
+	
+	public void setOwnerClass(String owner)
+	{
+		this.ownerclass = owner;
+	}
+	
+	public String getOwnerClass()
+	{
+		return this.ownerclass;
+	}
 
 
 

@@ -49,6 +49,8 @@ public class CodeGenTests2 {
 	
 	Object loadClassesAndRunMain(List<GenClass> classes, String className) throws Exception{
 		DynamicClassLoader loader = new DynamicClassLoader();
+		//System.out.println("Gen class in test: ");
+		//System.out.println(classes);
 		Class<?> mainClass = loader.define(classes);
 		Object[] args = new Object[1];  
 		return runMethod(mainClass, "main", args);
@@ -402,6 +404,7 @@ public class CodeGenTests2 {
 		List<GenClass> classes = compile(input, shortClassName, JVMpackageName);		
 		Object[] args = new Object[1];  
 		String className = "edu.ufl.cise.plpfa22.prog";
+		
 		loadClassesAndRunMain(classes, className);		
 	}
 	

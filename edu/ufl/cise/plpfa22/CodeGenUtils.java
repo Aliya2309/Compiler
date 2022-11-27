@@ -91,6 +91,9 @@ public class CodeGenUtils{
 		public Class<?> define(List<GenClass> generatedClasses) {
 			Class<?> mainClass = null;
 			for (GenClass genClass : generatedClasses) {
+//				System.out.println("Gen class : ");
+//				System.out.println(genClass);
+				//System.out.println(genClass.className());
 				Class<?> cl = define(toJavaClassName(genClass.className()), genClass.byteCode());
 				if (mainClass == null)
 					mainClass = cl;
